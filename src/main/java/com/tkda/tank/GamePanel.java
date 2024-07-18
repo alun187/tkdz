@@ -1,12 +1,13 @@
 package com.tkda.tank;
 
-import com.tkda.adapter.TankKeyAdapter;
 import com.tkda.map.Map;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -17,14 +18,22 @@ public class GamePanel extends JPanel implements ActionListener {
     private List<EnemyTank> enemyTanks;
     private boolean gameOver;
     private Map map;
+    private int score;
+    private List<Explosion> explosions;
 
     public GamePanel() {
+        initGame();
+    }
+
+    private void initGame() {
         playerTank = new Tank(100, 100);
         enemyTanks = new ArrayList<>();
         enemyTanks.add(new EnemyTank(200, 200, playerTank));
         enemyTanks.add(new EnemyTank(300, 300, playerTank));
 
         map = new Map();
+        score = 0;
+        explosions = new ArrayList<>();
 
         timer = new Timer(16, this);
         timer.start();
@@ -37,6 +46,7 @@ public class GamePanel extends JPanel implements ActionListener {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         map.draw(g);
+        drawScore(g);
         if (gameOver) {
             drawGameOver(g);
         } else {
@@ -44,7 +54,16 @@ public class GamePanel extends JPanel implements ActionListener {
             for (EnemyTank enemyTank : enemyTanks) {
                 enemyTank.draw(g);
             }
+            for (Explosion explosion : explosions) {
+                explosion.draw(g);
+            }
         }
+    }
+
+    private void drawScore(Graphics g) {
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("Arial", Font.BOLD, 20));
+        g.drawString("Score: " + score, 10, 20);
     }
 
     @Override
@@ -54,6 +73,10 @@ public class GamePanel extends JPanel implements ActionListener {
             for (EnemyTank enemyTank : enemyTanks) {
                 enemyTank.update();
             }
+            for (Explosion explosion : explosions) {
+                explosion.update();
+            }
+            explosions.removeIf(Explosion::isFinished);
             checkCollisions();
             if (playerTank.getHealth() <= 0) {
                 gameOver = true;
@@ -74,6 +97,8 @@ public class GamePanel extends JPanel implements ActionListener {
                 if (bullet.getBounds().intersects(enemyBounds)) {
                     it.remove();
                     bullets.remove(bullet);
+                    explosions.add(new Explosion(enemyTank.x, enemyTank.y));
+                    score += 100;  // 每摧毁一个敌方坦克增加100分
                     break;
                 }
             }
@@ -93,9 +118,52 @@ public class GamePanel extends JPanel implements ActionListener {
         g.setColor(Color.RED);
         g.setFont(new Font("Arial", Font.BOLD, 40));
         g.drawString("Game Over", getWidth() / 2 - 100, getHeight() / 2);
+
+        g.setFont(new Font("Arial", Font.PLAIN, 20));
+        g.drawString("Press R to Restart", getWidth() / 2 - 70, getHeight() / 2 + 40);
+    }
+
+    public void restartGame() {
+        timer.stop();
+        initGame();
+    }
+
+    // 键盘适配器类，用于捕获按键事件
+    private class TankKeyAdapter extends KeyAdapter {
+        private Tank tank;
+
+        public TankKeyAdapter(Tank tank) {
+            this.tank = tank;
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+            int key = e.getKeyCode();
+
+            if (key == KeyEvent.VK_LEFT) {
+                tank.setDirection(-1, 0);
+            } else if (key == KeyEvent.VK_RIGHT) {
+                tank.setDirection(1, 0);
+            } else if (key == KeyEvent.VK_UP) {
+                tank.setDirection(0, -1);
+            } else if (key == KeyEvent.VK_DOWN) {
+                tank.setDirection(0, 1);
+            } else if (key == KeyEvent.VK_SPACE) {
+                tank.shoot();
+            } else if (key == KeyEvent.VK_R && gameOver) {
+                restartGame();
+            }
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+            int key = e.getKeyCode();
+
+            if (key == KeyEvent.VK_LEFT || key == KeyEvent.VK_RIGHT) {
+                tank.setDirection(0, 0);
+            } else if (key == KeyEvent.VK_UP || key == KeyEvent.VK_DOWN) {
+                tank.setDirection(0, 0);
+            }
+        }
     }
 }
-
-
-
-
