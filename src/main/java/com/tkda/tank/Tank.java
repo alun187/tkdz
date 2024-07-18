@@ -8,11 +8,13 @@ public class Tank {
     protected int x, y;
     protected int dx, dy;
     private List<Bullet> bullets;
+    private int health;
 
     public Tank(int x, int y) {
         this.x = x;
         this.y = y;
         bullets = new ArrayList<>();
+        health = 3;  // 设置坦克的初始生命值
     }
 
     public void draw(Graphics g) {
@@ -21,6 +23,12 @@ public class Tank {
         for (Bullet bullet : bullets) {
             bullet.draw(g);
         }
+        drawHealth(g);
+    }
+
+    private void drawHealth(Graphics g) {
+        g.setColor(Color.RED);
+        g.drawString("Health: " + health, x, y - 10);
     }
 
     public void update() {
@@ -43,5 +51,14 @@ public class Tank {
     public List<Bullet> getBullets() {
         return bullets;
     }
+
+    public void reduceHealth() {
+        health--;
+    }
+
+    public int getHealth() {
+        return health;
+    }
 }
+
 
