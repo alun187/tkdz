@@ -1,6 +1,6 @@
 package com.tkda;
 
-import com.tkda.canvas.GamePanel;
+import com.tkda.tank.GamePanel;
 
 import javax.swing.*;
 

@@ -1,6 +1,6 @@
 package com.tkda.adapter;
 
-import com.tkda.dto.Tank;
+import com.tkda.tank.Tank;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -31,6 +31,10 @@ public class TankKeyAdapter extends KeyAdapter {
         if (key == KeyEvent.VK_DOWN) {
             tank.setDirection(0, 1);
         }
+
+        if (key == KeyEvent.VK_SPACE) {
+            tank.shoot();
+        }
     }
 
     @Override
@@ -46,3 +50,4 @@ public class TankKeyAdapter extends KeyAdapter {
         }
     }
 }
+
